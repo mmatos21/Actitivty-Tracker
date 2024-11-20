@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .todos-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        .todos-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .todos-container input,
+        .todos-container button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .todos-container button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        .todos-container button:hover {
+            background-color: #0056b3;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .todo-item {
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="todos-container">
+        <h2>Your Todos</h2>
+        <input type="text" id="todoInput" placeholder="Todo Title" autocomplete="off" />
+        <input type="date" id="todoDate" />
+        <button id="addTodo">Add Todo</button>
+
+        <input type="text" id="searchInput" placeholder="Search Todos" autocomplete="off" />
+        <button id="searchTodo">Search</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const addTodoButton = document.getElementById("addTodo");
+            const searchTodoButton = document.getElementById("searchTodo");
+            const todoInput = document.getElementById("todoInput");
+            const todoDate = document.getElementById("todoDate");
+            const searchInput = document.getElementById("searchInput");
+            const resultsDiv = document.getElementById("results");
+
+            // Add a new todo
+            if (addTodoButton) {
+                addTodoButton.addEventListener("click", async () => {
+                    const title = todoInput.value;
+                    const date = todoDate.value;
+
+                    if (!title || !date) {
+                        alert("Please enter both a todo title and a date");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch("http://localhost:3000/todos", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ title, date }),
+                            credentials: "include",
+                        });
+
+                        if (response.ok) {
+                            alert("Todo added successfully");
+                            location.reload(); // Reload the page to display the updated list
+                        } else {
+                            const error = await response.json();
+                            alert(`Error: ${error.error}`);
+                        }
+                    } catch (error) {
+                        console.error("Error adding todo:", error);
+                    }
+                });
+            }
+
+            // Search todos
+            if (searchTodoButton) {
+                searchTodoButton.addEventListener("click", async () => {
+                    const query = searchInput.value;
+
+                    if (!query) {
+                        alert("Please enter a search term");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`http://localhost:3000/todos/search?q=${query}`, {
+                            credentials: "include",
+                        });
+
+                        if (response.ok) {
+                            const results = await response.json();
+                            resultsDiv.innerHTML = ""; // Clear previous results
+
+                            results.forEach((todo) => {
+                                const todoItem = document.createElement("div");
+                                todoItem.classList.add("todo-item");
+                                todoItem.textContent = `${todo.title} (Due: ${todo.date})`;
+                                resultsDiv.appendChild(todoItem);
+                            });
+                        } else {
+                            const error = await response.json();
+                            alert(`Error: ${error.error}`);
+                        }
+                    } catch (error) {
+                        console.error("Error searching todos:", error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
