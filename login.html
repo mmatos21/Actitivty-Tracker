@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Login</h1>
+        <input type="text" id="username" autocomplete="username" placeholder="Enter username">
+        <input type="password" id="password" autocomplete="current-password" placeholder="Enter password">
+        <button id="loginButton">Login</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginButton = document.getElementById("loginButton");
+            if (loginButton) {
+                loginButton.addEventListener("click", async () => {
+                    const username = document.getElementById("username").value;
+                    const password = document.getElementById("password").value;
+
+                    if (!username || !password) {
+                        alert("Please enter username and password");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch("http://localhost:3000/login", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ username, password }),
+                            credentials: "include",
+                        });
+
+                        if (response.ok) {
+                            alert("Login successful");
+                            window.location.href = "todos.html";
+                        } else {
+                            const error = await response.json();
+                            alert(error.error);
+                        }
+                    } catch (error) {
+                        console.error("Error logging in:", error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
