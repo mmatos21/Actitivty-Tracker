@@ -156,6 +156,20 @@ app.post(
     }
 );
 
+// Mark a todo as done
+app.put("/todos/:id/done", isAuthenticated, (req, res) => {
+    const todo = todos.find(
+        (todo) => todo.id === parseInt(req.params.id) && todo.userId === req.session.userId
+    );
+
+    if (!todo) {
+        return res.status(404).json({ error: "Todo not found" });
+    }
+
+    todo.completed = true;
+    res.json({ message: "Todo marked as done" });
+});
+
 // Delete a todo
 app.delete("/todos/:id", isAuthenticated, (req, res) => {
     const index = todos.findIndex(
