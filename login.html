@@ -5,19 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
-        /* Add your styles here */
+        /* General Body Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Login Form Container */
+        .form-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Heading Style */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Input Fields */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        /* Button Style */
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Link Style */
+        .link {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div>
+    <div class="form-container">
         <h1>Login</h1>
         <input type="text" id="username" autocomplete="username" placeholder="Enter username">
         <input type="password" id="password" autocomplete="current-password" placeholder="Enter password">
         <button id="loginButton">Login</button>
+        <a href="#" id="signupLink" class="link">Don't have an account? Sign Up</a>
     </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signupModal" style="display: none;">
+        <div class="form-container">
+            <h1>Sign Up</h1>
+            <input type="text" id="signupUsername" placeholder="Enter username">
+            <input type="password" id="signupPassword" placeholder="Enter password">
+            <button id="signupButton">Sign Up</button>
+            <a href="#" id="backToLogin" class="link">Back to Login</a>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const loginButton = document.getElementById("loginButton");
+            const signupLink = document.getElementById("signupLink");
+            const signupModal = document.getElementById("signupModal");
+            const backToLogin = document.getElementById("backToLogin");
+            const signupButton = document.getElementById("signupButton");
+
+            // Show sign-up modal
+            signupLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                document.querySelector(".form-container").style.display = "none";
+                signupModal.style.display = "block";
+            });
+
+            // Back to login
+            backToLogin.addEventListener("click", (e) => {
+                e.preventDefault();
+                signupModal.style.display = "none";
+                document.querySelector(".form-container").style.display = "block";
+            });
+
+            // Login Functionality
             if (loginButton) {
                 loginButton.addEventListener("click", async () => {
                     const username = document.getElementById("username").value;
@@ -43,10 +155,43 @@
                             window.location.href = "todos.html";
                         } else {
                             const error = await response.json();
-                            alert(error.error);
+                            alert(error.error || "Login failed");
                         }
                     } catch (error) {
                         console.error("Error logging in:", error);
+                    }
+                });
+            }
+
+            // Sign Up Functionality
+            if (signupButton) {
+                signupButton.addEventListener("click", async () => {
+                    const username = document.getElementById("signupUsername").value;
+                    const password = document.getElementById("signupPassword").value;
+
+                    if (!username || !password) {
+                        alert("Please enter username and password");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch("http://localhost:3000/register", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ username, password }),
+                        });
+
+                        if (response.ok) {
+                            alert("Sign-up successful! Please log in.");
+                            backToLogin.click(); // Simulate clicking "Back to Login"
+                        } else {
+                            const error = await response.json();
+                            alert(error.error || "Sign-up failed");
+                        }
+                    } catch (error) {
+                        console.error("Error signing up:", error);
                     }
                 });
             }
@@ -54,4 +199,3 @@
     </script>
 </body>
 </html>
-
