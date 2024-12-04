@@ -5,60 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        /* Basic Reset */
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
 
+        /* Container for todos */
         .todos-container {
             background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 400px;
+            max-width: 90%;
         }
 
-        .todos-container h2 {
+        h2 {
             text-align: center;
+            color: #333;
             margin-bottom: 20px;
+            font-size: 24px;
         }
 
+        /* Input fields styling */
         .todos-container input,
         .todos-container button {
             width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
+            font-size: 16px;
         }
 
-        .todos-container button {
-            background-color: #007BFF;
+        /* Focus effect for inputs */
+        .todos-container input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
             color: white;
+            border: none;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        .todos-container button:hover {
+        button:hover {
             background-color: #0056b3;
         }
 
+        /* Todo results section */
         #results {
             margin-top: 20px;
         }
 
         .todo-item {
-            padding: 10px;
             background: #f9f9f9;
+            padding: 12px;
+            margin-bottom: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .todo-item .date {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .todo-item button {
+            margin-left: 10px;
+            font-size: 14px;
+            padding: 5px;
+        }
+
+        /* Empty state */
+        #results.empty {
+            text-align: center;
+            color: #888;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -107,7 +149,7 @@
 
                         if (response.ok) {
                             alert("Todo added successfully");
-                            location.reload(); // Reload the page to display the updated list
+                            loadTodos(); // Reload the todo list
                         } else {
                             const error = await response.json();
                             alert(`Error: ${error.error}`);
@@ -123,11 +165,6 @@
                 searchTodoButton.addEventListener("click", async () => {
                     const query = searchInput.value;
 
-                    if (!query) {
-                        alert("Please enter a search term");
-                        return;
-                    }
-
                     try {
                         const response = await fetch(`http://localhost:3000/todos/search?q=${query}`, {
                             credentials: "include",
@@ -135,14 +172,7 @@
 
                         if (response.ok) {
                             const results = await response.json();
-                            resultsDiv.innerHTML = ""; // Clear previous results
-
-                            results.forEach((todo) => {
-                                const todoItem = document.createElement("div");
-                                todoItem.classList.add("todo-item");
-                                todoItem.textContent = `${todo.title} (Due: ${todo.date})`;
-                                resultsDiv.appendChild(todoItem);
-                            });
+                            renderTodos(results);
                         } else {
                             const error = await response.json();
                             alert(`Error: ${error.error}`);
@@ -152,6 +182,88 @@
                     }
                 });
             }
+
+            // Load all todos
+            async function loadTodos() {
+                try {
+                    const response = await fetch("http://localhost:3000/todos", {
+                        credentials: "include",
+                    });
+
+                    if (response.ok) {
+                        const todos = await response.json();
+                        renderTodos(todos);
+                    } else {
+                        alert("Could not load todos.");
+                    }
+                } catch (error) {
+                    console.error("Error loading todos:", error);
+                }
+            }
+
+            // Render todos in the DOM
+            function renderTodos(todos) {
+                resultsDiv.innerHTML = ""; // Clear previous results
+
+                if (todos.length === 0) {
+                    resultsDiv.innerHTML = "<p>No todos found.</p>";
+                    return;
+                }
+
+                todos.forEach((todo) => {
+                    const todoItem = document.createElement("div");
+                    todoItem.classList.add("todo-item");
+
+                    todoItem.innerHTML = `
+                        <span>${todo.title} (Due: ${todo.date})</span>
+                        <button onclick="markAsDone(${todo.id})">Mark as Done</button>
+                        <button onclick="deleteTodo(${todo.id})">Delete</button>
+                    `;
+
+                    resultsDiv.appendChild(todoItem);
+                });
+            }
+
+            // Mark todo as done
+            window.markAsDone = async (id) => {
+                try {
+                    const response = await fetch(`http://localhost:3000/todos/${id}/done`, {
+                        method: "PUT",
+                        credentials: "include",
+                    });
+
+                    if (response.ok) {
+                        alert("Todo marked as done!");
+                        loadTodos();
+                    } else {
+                        alert("Failed to mark todo as done.");
+                    }
+                } catch (error) {
+                    console.error("Error marking todo as done:", error);
+                }
+            };
+
+            // Delete a todo
+            window.deleteTodo = async (id) => {
+                try {
+                    const response = await fetch(`http://localhost:3000/todos/${id}`, {
+                        method: "DELETE",
+                        credentials: "include",
+                    });
+
+                    if (response.ok) {
+                        alert("Todo deleted!");
+                        loadTodos();
+                    } else {
+                        alert("Failed to delete todo.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting todo:", error);
+                }
+            };
+
+            // Initial load of todos
+            loadTodos();
         });
     </script>
 </body>
