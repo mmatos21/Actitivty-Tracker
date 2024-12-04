@@ -96,6 +96,22 @@
             padding: 5px;
         }
 
+       /* .todo-item button {
+            margin-left: 10px;
+            font-size: 14px;
+            padding: 5px;
+            background-color: red; 
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+}
+
+.todo-item button.done {
+    background-color: green; 
+}*/
+
         /* Empty state */
         #results.empty {
             text-align: center;
@@ -224,6 +240,36 @@
                 });
             }
 
+            /*// Render todos in the DOM
+function renderTodos(todos) {
+    resultsDiv.innerHTML = ""; // Clear previous results
+
+    if (todos.length === 0) {
+        resultsDiv.innerHTML = "<p>No todos found.</p>";
+        return;
+    }
+
+    todos.forEach((todo) => {
+        const todoItem = document.createElement("div");
+        todoItem.classList.add("todo-item");
+
+        const todoButton = document.createElement("button");
+        todoButton.innerText = "Mark as Done";
+        todoButton.classList.add("mark-done-btn"); // Add class for button
+
+        // Attach the click handler and pass the button element
+        todoButton.addEventListener('click', () => markAsDone(todo.id, todoButton));
+
+        todoItem.innerHTML = `
+            <span>${todo.title} (Due: ${todo.date})</span>
+        `;
+
+        todoItem.appendChild(todoButton); // Add button to the todo item
+
+        resultsDiv.appendChild(todoItem);
+    });
+}*/
+
             // Mark todo as done
             window.markAsDone = async (id) => {
                 try {
@@ -242,6 +288,28 @@
                     console.error("Error marking todo as done:", error);
                 }
             };
+
+            // Mark todo as done
+        /*window.markAsDone = async (id, button) => {
+            try {
+                const response = await fetch(`http://localhost:3000/todos/${id}/done`, {
+                    method: "PUT",
+                    credentials: "include",
+                });    
+
+                if (response.ok) {
+            // Toggle the button's color when clicked
+                button.classList.toggle('done');
+            
+            // Optional: Reload the todos after marking as done
+                loadTodos();
+                } else {
+                alert("Failed to mark todo as done.");
+            }
+        } catch (error) {
+        console.error("Error marking todo as done:", error);
+    }
+}; */
 
             // Delete a todo
             window.deleteTodo = async (id) => {
